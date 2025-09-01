@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="icon" type="image/x-icon" href="img/2_character_pepe/1_idle/idle/I-1.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap"
+        rel="stylesheet">
+    <script src="models/drawable-object.class.js"></script>
+    <script src="models/movable-object.class.js"></script>
+    <script src="models/character.class.js"></script>
+    <script src="models/chicken.class.js"></script>
+    <script src="models/cloud.class.js"></script>
+    <script src="models/coin.class.js"></script>
+    <script src="models/bottle.class.js"></script>
+    <script src="models/status-bar.class.js"></script>
+    <script src="models/coin-bar.class.js"></script>
+    <script src="models/bottle-bar.class.js"></script>
+    <script src="models/boss-bar.class.js"></script>
+    <script src="models/world.class.js"></script>
+    <script src="models/background-object.class.js"></script>
+    <script src="models/keyboard.class.js"></script>
+    <script src="models/level.class.js"></script>
+    <script src="models/throwable-object.class.js"></script>
+    <script src="models/endboss.class.js"></script>
+    <script src="levels/level1.js"></script>   
+    <script src="js/fullscreen.js"></script>
+</head>
+
+<body onload="">
+    <h1>El pollo loco</h1>
+    <div class="game">
+        <img class="fullscreen-icon" src="img/fullsceen.png" alt="" onclick="toggleFullscreen()">
+        <canvas id="canvas" width="720" height="480"></canvas>
+
+        <div class="mobile-ctrls">
+            <button class="ctrl" data-key="LEFT">◀</button>
+            <button class="ctrl" data-key="RIGHT">▶</button>
+            <button class="ctrl" data-key="SPACE">⤒</button>
+            <button class="ctrl" data-key="D">🧪</button>
+        </div>
+        <div class="start-screen">
+            <div class="start-ui">
+                <button class="btn btn--primary" onclick="startGame()">Start</button>
+                <button class="btn btn--ghost" onclick="openHelp()">Help</button>
+            </div>
+        </div>
+
+        <div class="help hide">
+            <div class="help-box">
+                <h3>Help</h3>
+                <p>← → laufen, SPACE springen, D werfen</p>
+                <p>Die Flaschen sind nur für den boss gedacht. Die normalen Chickens werden nur mit dem drauf springen
+                    getötet</p>
+                <button class="btn" onclick="closeHelp()">OK</button>
+            </div>
+        </div>
+
+        <div class="overlay" id="victory-overlay"></div>
+        <div class="overlay overlay-lose" id="lose"></div>
+
+    </div>
+</body>
+<script src="js/controls-mobile.js" defer></script>
+<script src="js/game.js" defer></script>
+
+
+</html>

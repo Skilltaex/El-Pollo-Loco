@@ -1,0 +1,227 @@
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: url('img/5_background/second_half_background.png') no-repeat center fixed;
+    background-size: cover;   
+    font-family: "Nunito", sans-serif;
+    font-size: 20px;
+}
+
+canvas {
+    display: block;
+}
+
+.nunito-text {
+    font-family: "Nunito", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.game {
+    position: relative;
+    display: inline-block;
+}
+
+.game .overlay {
+    position: absolute;
+    inset: 0;
+    display: none;
+    z-index: 10;
+    background:
+        rgba(0, 0, 0, 0.45) url('img/You won, you lost/You Win A.png') center / cover no-repeat;
+}
+
+.game .overlay.show {
+    display: block;
+}
+
+.game:fullscreen {
+    width: 100vw;
+    height: 100vh;
+}
+
+.game:fullscreen canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.game .fullscreen-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    user-select: none;
+    z-index: 50;
+    transition: filter .15s ease, transform .1s ease;
+}
+
+.game .fullscreen-icon:hover {
+    transform: scale(1.1);
+    filter: brightness(1.25);
+}
+
+.game:fullscreen .fullscreen-icon {
+    top: 16px;
+    right: 16px;
+}
+
+.game .start-screen {
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 24px;
+    background: url('img/startbildschirm.png') center / cover no-repeat;
+}
+
+.start-ui {
+    display: flex;
+    gap: 12px;
+}
+
+.btn {
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font: 600 16px "Nunito", sans-serif;
+    transition: transform .1s ease, filter .15s ease;
+    color: #fff;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.1);
+}
+
+.btn:active {
+    transform: scale(.98);
+}
+
+.btn--primary {
+    background: #2b6fff;
+}
+
+.btn--ghost {
+    background: rgba(255, 255, 255, .12);
+    border: 1px solid rgba(255, 255, 255, .25);
+}
+
+.game .help.hide {
+    display: none;
+}
+
+.game .help {
+    position: absolute;
+    inset: 0;
+    z-index: 40;
+    display: grid;
+    place-items: center;
+    background: rgba(0, 0, 0, .45);
+}
+
+.help-box {
+    width: 420px;
+    max-width: 90vw;
+    padding: 18px;
+    border-radius: 12px;
+    background: #0f1220;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, .2);
+}
+
+.mobile-ctrls {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 12px;
+    z-index: 60;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 14px;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.ctrl {
+    width: 68px;
+    height: 68px;
+    border: none;
+    border-radius: 16px;
+    background: rgba(0, 0, 0, .35);
+    color: #fff;
+    font: 600 22px "Nunito", sans-serif;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, .35);
+    cursor: pointer;
+    transition: transform .05s ease, background .1s ease;
+}
+
+.ctrl:active,
+.ctrl.on {
+    transform: scale(.96);
+    background: rgba(0, 0, 0, .55);
+}
+
+.game:fullscreen .start-screen {
+    align-items: center;
+    justify-content: center;
+}
+
+.game .overlay-lose {
+    background: rgba(0,0,0,.45)
+                url('img/You won, you lost/Game over A.png') center/cover no-repeat;
+    z-index: 100;
+}
+
+@media only screen and (max-width: 720px) {
+    .game canvas {
+        width: 100%;
+        height: auto;
+    }
+}
+
+@media only screen and (max-height: 480px) {
+    h1 {
+        display: none;
+    }
+
+    .game canvas {
+        height: 100vh;
+    }
+}
+
+@media (pointer: fine) {
+    .mobile-ctrls {
+        display: none;
+    }
+}
+
+.game .start-screen {
+    z-index: 80;
+}
+
+@media (pointer: coarse) {
+    .game .start-screen {
+        align-items: center;
+        justify-content: center;
+        padding: 0 24px;
+    }
+
+    .start-ui {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .btn {
+        width: 220px;
+    }
+}
