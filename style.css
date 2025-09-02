@@ -3,7 +3,7 @@ body {
     flex-direction: column;
     align-items: center;
     background: url('img/5_background/second_half_background.png') no-repeat center fixed;
-    background-size: cover;   
+    background-size: cover;
     font-family: "Nunito", sans-serif;
     font-size: 20px;
 }
@@ -24,14 +24,23 @@ canvas {
     display: inline-block;
 }
 
-.game .overlay {
-    position: absolute;
-    inset: 0;
-    display: none;
-    z-index: 10;
-    background:
-        rgba(0, 0, 0, 0.45) url('img/You won, you lost/You Win A.png') center / cover no-repeat;
+.game { position: relative; }
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: none;
+  z-index: 100;
+  background: rgba(0,0,0,.45);
 }
+.overlay.show { display: block !important; }
+
+.overlay-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
 
 .game .overlay.show {
     display: block;
@@ -109,7 +118,7 @@ canvas {
 }
 
 .btn--ghost {
-    background: rgba(255, 255, 255, .12);
+    background: #2b6fff;
     border: 1px solid rgba(255, 255, 255, .25);
 }
 
@@ -135,6 +144,33 @@ canvas {
     color: #fff;
     border: 1px solid rgba(255, 255, 255, .2);
 }
+
+.game .btn-mute {
+    position: absolute;
+    top: 8px;
+    right: 52px;
+    z-index: 50;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background: rgba(0, 0, 0, .35) center/60% no-repeat;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    transition: transform .1s ease, filter .15s ease;
+    background-image: url('img/speaker-31227_1280.png');
+}
+
+.game .btn-mute.is-muted {
+    background-image: url('img/mute.png');
+}
+
+.game .btn-mute:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.1);
+}
+
 
 .mobile-ctrls {
     position: absolute;
@@ -176,11 +212,46 @@ canvas {
     justify-content: center;
 }
 
-.game .overlay-lose {
-    background: rgba(0,0,0,.45)
-                url('img/You won, you lost/Game over A.png') center/cover no-repeat;
-    z-index: 100;
+.game .overlay {
+    position: absolute;
+    inset: 0;
+    display: none;
+    z-index: 40;
+    background: rgba(0, 0, 0, .45) center/cover no-repeat;
 }
+
+.game .overlay.show {
+    display: block;
+}
+
+.game .overlay--lose {
+    background-image: url('img/You won, you lost/Game over A.png');
+}
+
+.overlay-ui {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 24px;
+    display: flex;
+    justify-content: center;
+}
+
+.btn {
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font: 600 16px "Nunito", sans-serif;
+    color: #fff;
+    background: #2b6fff;
+}
+
+.btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
 
 @media only screen and (max-width: 720px) {
     .game canvas {

@@ -3,6 +3,15 @@ class Character extends MovableObject {
     height = 280;
     y = 60;
     speed = 20;
+    hitboxScaleX = 0.6;
+    hitboxScaleY = 0.6;
+    hitboxOffsetX = 20;
+    hitboxOffsetY = 100;    
+    sfxJump = new Audio('audio/jump.mp3');
+    sfxHurt = new Audio('audio/hurt.mp3');
+    sfxDead = new Audio('audio/dead.mp3');
+    sfxWalk = new Audio('audio/walking.mp3');
+    deadPlayed = false;
 
     IMAGES_WALKING = [
         'img/2_character_pepe/2_walk/W-21.png',
@@ -41,13 +50,6 @@ class Character extends MovableObject {
         'img/2_character_pepe/4_hurt/H-43.png',
     ]
 
-    // ── SFX (Passe die Pfade an)
-    sfxJump = new Audio('audio/jump.mp3');
-    sfxHurt = new Audio('audio/hurt.mp3');
-    sfxDead = new Audio('audio/dead.mp3');
-    sfxWalk = new Audio('audio/walking.mp3');
-    deadPlayed = false;
-
     playSfx(a) {
         try { a.currentTime = 0; a.play(); } catch (e) { }
     }
@@ -62,18 +64,11 @@ class Character extends MovableObject {
         this.animate();
     }
 
-    hitboxScaleX = 0.6;
-    hitboxScaleY = 0.6;
-    hitboxOffsetX = 20;
-    hitboxOffsetY = 100;
-
     animate() {
         setInterval(() => {
-            // this.walking_sound.pause();            
             if (this.world.keyboard.RIGHT && this.x < this.world.level.level_ende_x) {
                 this.moveRight();
                 this.otherDirection = false;
-                // this.walking_sound.play();
             }
 
             if (this.world.keyboard.LEFT && this.x > 0) {
@@ -91,7 +86,7 @@ class Character extends MovableObject {
 
         setInterval(() => {
             if (this.isDead()) {
-                if (!this.deadPlayed) {  
+                if (!this.deadPlayed) {
                     this.deadPlayed = true;
                     this.playSfx(this.sfxDead);
                 }

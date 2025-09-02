@@ -23,9 +23,6 @@ function closeHelp() {
     if (s) s.style.display = '';
 }
 
-
-
-
 window.addEventListener("keydown", (e) => {
     if (e.keyCode == 39) keyboard.RIGHT = true;
     if (e.keyCode == 37) keyboard.LEFT  = true;

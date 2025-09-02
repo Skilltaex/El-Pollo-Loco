@@ -15,32 +15,68 @@ class World {
     paused = false;
     victoryScheduled = false;
     sfxBossDead = new Audio('audio/win.mp3');
+    muted = false;
+    music = new Audio('audio/background-music.mp3');
 
     constructor(canvas, keyboard) {
         this.ctx = canvas.getContext('2d');
         this.canvas = canvas;
         this.keyboard = keyboard;
+        this.setupAudio();
         this.ensureVictoryOverlay();
         this.draw();
         this.setWorld();
         this.run();
     }
 
-    ensureVictoryOverlay() {
-        let wrapper = document.getElementById('game') || this.canvas.parentElement;
-        if (!wrapper) return;
-
-        let victoryOverlay = document.getElementById('victory-overlay');
-        if (!victoryOverlay) {
-            victoryOverlay = document.createElement('div');
-            victoryOverlay.id = 'victory-overlay';
-            wrapper.appendChild(victoryOverlay);
+    toggleMute() {
+        this.muted = !this.muted;
+        localStorage.setItem('muted', this.muted ? '1' : '0');
+        this.applyMuteUI();
+        if (this.muted) {
+            this.music.pause();
+        } else {
+            this.music.play().catch(() => { });
         }
-        this.victoryEl = victoryOverlay;
     }
+
+    applyMuteUI() {
+        let btn = document.querySelector('.btn-mute');
+        if (btn) btn.classList.toggle('is-muted', this.muted);
+    }
+
+    setupAudio() {
+        this.music.loop = true;
+        this.music.volume = 0.01;
+        this.muted = localStorage.getItem('muted') === '1';
+        this.applyMuteUI();
+        const startOnce = () => {
+            if (!this.muted) this.music.play().catch(() => { });
+            window.removeEventListener('pointerdown', startOnce, { capture: true });
+        };
+        window.addEventListener('pointerdown', startOnce, { capture: true, once: true });
+    }
+
+    ensureVictoryOverlay() {
+    const wrapper = document.getElementById('game') || this.canvas?.parentElement;
+    if (!wrapper) return;
+
+    let el = document.getElementById('victory-overlay');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'victory-overlay';
+        el.className = 'overlay overlay--win'; // ← WICHTIG
+        wrapper.appendChild(el);
+    } else {
+        // Falls im HTML nur id gesetzt war, Klassen nachrüsten
+        el.classList.add('overlay', 'overlay--win');
+    }
+    this.victoryEl = el;
+}
 
     setWorld() {
         this.character.world = this;
+        this.endboss.world = this;
         this.collectedCoins = 0;
         this.totalCoins = this.level.coins.length;
         this.collectedBottles = 0;
@@ -51,30 +87,43 @@ class World {
         setInterval(() => {
             if (this.paused) return;
             this.checkCollisions();
+            this.checkBossCollision();
             this.checkThrowObjects();
             this.checkCoinCollection();
             this.checkBottleCollection();
             if (!this.keyboard.D) this.canThrow = true;
             if (this.character.isDead()) this.onPlayerKilled();
-
         }, 1000 / 60);
     }
 
-    onPlayerKilled() {
-    if (this.defeatScheduled) return;
-    this.defeatScheduled = true;
-    let frames = this.character.IMAGES_DEAD?.length || 1;
-    let delay  = frames * 50;
-    setTimeout(() => {
-        let el = document.getElementById('lose');
-        if (el) {
-            el.classList.add('show');
-            el.onclick = () => this.resetGame();
+    checkBossCollision() {
+        if (!this.endboss || this.endboss.isDead()) return;
+        if (this.character.isDead()) return;
+        if (this.character.isColliding(this.endboss) && !this.character.isHurt()) {
+            this.applySideHit();
         }
-        this.paused = true;
-    }, delay);
-}
+    }
 
+    onPlayerKilled() {
+        if (this.defeatScheduled) return;
+        this.defeatScheduled = true;
+
+        let frames = this.character.IMAGES_DEAD?.length || 1;
+        setTimeout(() => {
+            let el = document.querySelector('.overlay--lose');
+            if (el) {
+                el.classList.add('show');
+                let btn = el.querySelector('.restart-btn');
+                if (btn) btn.onclick = () => this.resetGame();
+            }
+            this.paused = true;
+        }, frames * 50);
+    }
+
+    resetGame() {
+        location.replace(location.pathname + '?t=' + Date.now());
+        location.reload();
+    }
 
     checkCollisions() {
         for (let i = this.level.enemies.length - 1; i >= 0; i--) {
@@ -110,18 +159,24 @@ class World {
         this.bossBar.setPercentage(pct);
     }
 
-    onBossKilled() {
-        if (this.victoryScheduled) return;
-        this.victoryScheduled = true;
-        try { this.sfxBossDead.currentTime = 0; this.sfxBossDead.play(); } catch (e) { }
-        setTimeout(() => {
-            this.paused = true;
-            if (this.victoryEl) {
-                this.victoryEl.classList.add('show');
-                this.victoryEl.onclick = () => this.resetGame();
-            }
-        }, (this.endboss.IMAGES_DEAD?.length || 1) * 200);
-    }
+   onBossKilled() {
+    if (this.victoryScheduled) return;
+    this.victoryScheduled = true;
+
+    try { this.sfxBossDead.currentTime = 0; this.sfxBossDead.play(); } catch(e) {}
+
+    const delay = (this.endboss.IMAGES_DEAD?.length || 1) * 200;
+
+    setTimeout(() => {
+        const el = this.victoryEl || document.getElementById('victory-overlay');
+        if (el) {
+            el.classList.add('show');
+            el.onclick = () => this.resetGame();
+        }
+        this.paused = true; // NACH dem Anzeigen
+    }, delay);
+}
+
 
     resetGame() {
         this.paused = true;
@@ -205,7 +260,7 @@ class World {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.translate(this.camera_x, 0);
         this.addObjectsInToWorld();
-        this.ctx.translate(-this.camera_x, 0);        
+        this.ctx.translate(-this.camera_x, 0);
         let self = this;
         if (this.paused) return;
         requestAnimationFrame(function () {

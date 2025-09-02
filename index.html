@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>El pollo loco</title>
     <link rel="icon" type="image/x-icon" href="img/2_character_pepe/1_idle/idle/I-1.png">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,7 +28,7 @@
     <script src="models/level.class.js"></script>
     <script src="models/throwable-object.class.js"></script>
     <script src="models/endboss.class.js"></script>
-    <script src="levels/level1.js"></script>   
+    <script src="levels/level1.js"></script>
     <script src="js/fullscreen.js"></script>
 </head>
 
@@ -36,6 +36,8 @@
     <h1>El pollo loco</h1>
     <div class="game">
         <img class="fullscreen-icon" src="img/fullsceen.png" alt="" onclick="toggleFullscreen()">
+        <button class="btn-mute" onclick="world && world.toggleMute()" aria-label="Mute"></button>
+
         <canvas id="canvas" width="720" height="480"></canvas>
 
         <div class="mobile-ctrls">
@@ -61,8 +63,19 @@
             </div>
         </div>
 
-        <div class="overlay" id="victory-overlay"></div>
-        <div class="overlay overlay-lose" id="lose"></div>
+        <div id="victory-overlay" class="overlay overlay--win">
+            <img class="overlay-img" src="img/You won, you lost/You Win A.png" alt="Victory">
+            <div class="overlay-ui">
+                <button class="btn btn--primary restart-btn">Restart</button>
+            </div>
+        </div>
+
+        <div class="overlay overlay--lose">
+            <div class="overlay-ui">
+                <button class="btn btn--primary restart-btn">Restart</button>
+            </div>
+        </div>
+
 
     </div>
 </body>
