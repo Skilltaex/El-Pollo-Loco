@@ -6,6 +6,7 @@ class MovableObject extends DrawableObject {
     energy = 100;
     lastHit = 0;
     prevY = this.y;
+    hitboxLeft = 0; hitboxRight = 0; hitboxTop = 0; hitboxBottom = 0;
 
     applyGravity() {
         setInterval(() => {
@@ -15,6 +16,14 @@ class MovableObject extends DrawableObject {
                 this.speedY -= this.acceleration;
             }
         }, 1000 / 60);
+    }    
+
+    getHitbox() {
+        const x = this.x + this.hitboxLeft;
+        const y = this.y + this.hitboxTop;
+        const w = this.width - this.hitboxLeft - this.hitboxRight;
+        const h = this.height - this.hitboxTop - this.hitboxBottom;
+        return { x, y, w, h };
     }
 
     isAboveGround() {

@@ -58,21 +58,19 @@ class World {
     }
 
     ensureVictoryOverlay() {
-    const wrapper = document.getElementById('game') || this.canvas?.parentElement;
-    if (!wrapper) return;
-
-    let el = document.getElementById('victory-overlay');
-    if (!el) {
-        el = document.createElement('div');
-        el.id = 'victory-overlay';
-        el.className = 'overlay overlay--win'; // ← WICHTIG
-        wrapper.appendChild(el);
-    } else {
-        // Falls im HTML nur id gesetzt war, Klassen nachrüsten
-        el.classList.add('overlay', 'overlay--win');
+        const wrapper = document.getElementById('game') || this.canvas?.parentElement;
+        if (!wrapper) return;
+        let el = document.getElementById('victory-overlay');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'victory-overlay';
+            el.className = 'overlay overlay--win';
+            wrapper.appendChild(el);
+        } else {
+            el.classList.add('overlay', 'overlay--win');
+        }
+        this.victoryEl = el;
     }
-    this.victoryEl = el;
-}
 
     setWorld() {
         this.character.world = this;
@@ -104,15 +102,20 @@ class World {
         }
     }
 
+    setOverlay(active) {
+        const g = this.canvas && this.canvas.parentElement;
+        if (g) g.classList.toggle('has-overlay', !!active);
+    }
+
     onPlayerKilled() {
         if (this.defeatScheduled) return;
         this.defeatScheduled = true;
-
         let frames = this.character.IMAGES_DEAD?.length || 1;
         setTimeout(() => {
             let el = document.querySelector('.overlay--lose');
             if (el) {
                 el.classList.add('show');
+                this.setOverlay(true);
                 let btn = el.querySelector('.restart-btn');
                 if (btn) btn.onclick = () => this.resetGame();
             }
@@ -120,7 +123,24 @@ class World {
         }, frames * 50);
     }
 
+    onBossKilled() {
+        if (this.victoryScheduled) return;
+        this.victoryScheduled = true;
+        try { this.sfxBossDead.currentTime = 0; this.sfxBossDead.play(); } catch (e) { }
+        const delay = (this.endboss.IMAGES_DEAD?.length || 1) * 200;
+        setTimeout(() => {
+            const el = this.victoryEl || document.getElementById('victory-overlay');
+            if (el) {
+                el.classList.add('show');
+                this.setOverlay(true);
+                el.onclick = () => this.resetGame();
+            }
+            this.paused = true;
+        }, delay);
+    }
+
     resetGame() {
+        this.setOverlay(false);
         location.replace(location.pathname + '?t=' + Date.now());
         location.reload();
     }
@@ -157,32 +177,12 @@ class World {
     updateBossBar() {
         let pct = (this.endboss.energy / this.endboss.maxEnergy) * 100;
         this.bossBar.setPercentage(pct);
-    }
-
-   onBossKilled() {
-    if (this.victoryScheduled) return;
-    this.victoryScheduled = true;
-
-    try { this.sfxBossDead.currentTime = 0; this.sfxBossDead.play(); } catch(e) {}
-
-    const delay = (this.endboss.IMAGES_DEAD?.length || 1) * 200;
-
-    setTimeout(() => {
-        const el = this.victoryEl || document.getElementById('victory-overlay');
-        if (el) {
-            el.classList.add('show');
-            el.onclick = () => this.resetGame();
-        }
-        this.paused = true; // NACH dem Anzeigen
-    }, delay);
-}
-
+    }    
 
     resetGame() {
         this.paused = true;
         window.location.reload();
     }
-
 
     isHeadStomp(enemy) {
         let prevBottom = this.character.prevY + this.character.height;

@@ -37,9 +37,13 @@
     <div class="game">
         <img class="fullscreen-icon" src="img/fullsceen.png" alt="" onclick="toggleFullscreen()">
         <button class="btn-mute" onclick="world && world.toggleMute()" aria-label="Mute"></button>
-
         <canvas id="canvas" width="720" height="480"></canvas>
-
+        <div id="rotate-lock" class="overlay rotate-overlay">
+            <div class="rotate-ui">
+                <img class="handy" src="img/arrow.png" alt="">
+                <p>Bitte ins Querformat drehen</p>
+            </div>
+        </div>
         <div class="mobile-ctrls">
             <button class="ctrl" data-key="LEFT">◀</button>
             <button class="ctrl" data-key="RIGHT">▶</button>
@@ -52,7 +56,6 @@
                 <button class="btn btn--ghost" onclick="openHelp()">Help</button>
             </div>
         </div>
-
         <div class="help hide">
             <div class="help-box">
                 <h3>Help</h3>
@@ -62,21 +65,18 @@
                 <button class="btn" onclick="closeHelp()">OK</button>
             </div>
         </div>
-
         <div id="victory-overlay" class="overlay overlay--win">
             <img class="overlay-img" src="img/You won, you lost/You Win A.png" alt="Victory">
             <div class="overlay-ui">
                 <button class="btn btn--primary restart-btn">Restart</button>
             </div>
         </div>
-
         <div class="overlay overlay--lose">
+            <img class="overlay-img" src="img/You won, you lost/Game over A.png" alt="Defeat">
             <div class="overlay-ui">
                 <button class="btn btn--primary restart-btn">Restart</button>
             </div>
         </div>
-
-
     </div>
 </body>
 <script src="js/controls-mobile.js" defer></script>
