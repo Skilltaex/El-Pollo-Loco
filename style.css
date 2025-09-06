@@ -133,24 +133,78 @@ canvas {
     gap: 12px;
 }
 
+/* HELP OVERLAY – responsive */
 .game .help{
-  position: absolute;
-  inset: 0;
-  z-index: 120;
-  display: grid;
-  place-items: center;
-  background: rgba(0,0,0,.45);
+  position:absolute;
+  inset:0;
+  z-index:120;
+  display:grid;
+  place-items:center;
+  padding: max(12px, env(safe-area-inset-top,0))
+           max(12px, env(safe-area-inset-right,0))
+           max(12px, env(safe-area-inset-bottom,0))
+           max(12px, env(safe-area-inset-left,0));
+  background: rgba(0,0,0,.5);
 }
 .game .help.hide{ display:none; }
 
-.help-box {
-    width: 420px;
-    max-width: 90vw;
-    padding: 18px;
-    border-radius: 12px;
-    background: #0f1220;
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, .2);
+.help-box{
+  width: min(560px, 92vw);
+  max-height: min(80vh, 560px);
+  overflow:auto;
+  padding: clamp(14px, 2.4vh, 20px);
+  border-radius: 12px;
+  background:#0f1220;
+  color:#fff;
+  border:1px solid rgba(255,255,255,.2);
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  font-size: clamp(14px, 2.2vh, 18px);
+  line-height: 1.45;
+}
+.help-box h3{
+  margin:0 0 8px 0;
+  font-size: clamp(18px, 2.6vh, 22px);
+}
+.help-box p{
+  margin: 6px 0;
+  word-wrap: break-word;
+}
+.help .start-ui{
+  display:flex;
+  gap: 10px;
+  justify-content:center;
+  margin-top: 12px;
+}
+.help .btn{
+  min-height: 40px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font: 600 clamp(14px, 2.2vh, 16px) "Nunito", sans-serif;
+  cursor: pointer;
+}
+
+/* MOBILE/TABLET */
+@media (pointer: coarse), (hover: none){
+  .help-box{
+    width: min(640px, 94vw);
+    max-height: 86vh;
+    padding: clamp(14px, 2.8vh, 22px);
+  }
+  .help .start-ui{
+    flex-direction: column;
+  }
+  .help .btn{
+    width: 100%;
+    min-height: 48px;
+  }
+}
+
+/* sehr niedrige Viewports (Landscape-Handy) */
+@media (max-height: 480px){
+  .help-box{
+    width: 94vw;
+    max-height: 90vh;
+  }
 }
 
 .overlay {
@@ -162,7 +216,7 @@ canvas {
 }
 
 .overlay.show {
-    display: flex;                 /* zentrieren */
+    display: flex;
     align-items: center;
     justify-content: center;
     padding: 16px;
@@ -172,7 +226,7 @@ canvas {
     display: block;
     width: auto;
     height: auto;
-    max-width: min(92vw, 720px);   /* begrenzen, ohne zu verzerren */
+    max-width: min(92vw, 720px);
     max-height: min(82vh, 480px);
     object-fit: contain;
     margin: 0 auto;

@@ -22,6 +22,7 @@ class World {
     sfxBossDead = new Audio('audio/win.mp3');
     muted = false;
     music = new Audio('audio/background-music.mp3');
+    audioReady = false;
 
     /**
      * @param {HTMLCanvasElement} canvas
@@ -38,7 +39,6 @@ class World {
         this.run();
     }
 
-
     /** Mute umschalten und UI/Audio anpassen. */
     toggleMute() {
         this.muted = !this.muted;
@@ -48,8 +48,8 @@ class World {
         if (this.music) this.music.muted = m;
         if (this.sfxBossDead) this.sfxBossDead.muted = m;
         this.character?.syncMute?.();
+        if (!m && this.audioReady) this.music.play().catch(() => { });
         if (m) this.music.pause();
-        else this.music.play().catch(() => { });
     }
 
     /** Mute-Button visuell updaten. */
@@ -61,18 +61,20 @@ class World {
     /** Hintergrundmusik vorbereiten (Autoplay nach erstem Pointerdown). */
     setupAudio() {
         this.music.loop = true;
-        this.music.volume = 0.04;
+        this.music.volume = 0.010;
+        this.sfxBossDead.volume = 0.15;
         this.muted = localStorage.getItem('muted') === '1';
         this.applyMuteUI();
         const m = this.muted;
         if (this.music) this.music.muted = m;
         if (this.sfxBossDead) this.sfxBossDead.muted = m;
         this.character?.syncMute?.();
-        const startOnce = () => {
+        const unlock = () => {
+            this.audioReady = true;
             if (!this.muted) this.music.play().catch(() => { });
-            window.removeEventListener('pointerdown', startOnce, { capture: true });
+            window.removeEventListener('pointerdown', unlock, { capture: true });
         };
-        window.addEventListener('pointerdown', startOnce, { capture: true, once: true });
+        window.addEventListener('pointerdown', unlock, { capture: true, once: true });
     }
 
     /** Sieges-Overlay sicherstellen (falls im DOM nicht vorhanden). */

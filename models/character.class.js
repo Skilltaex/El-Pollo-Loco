@@ -83,11 +83,10 @@ class Character extends MovableObject {
      * @param {HTMLAudioElement} a
      */
     playSfx(a) {
-        if (this.world?.muted) return;
+        if (this.world?.muted || !this.world?.audioReady) return; // <— Guard
         try {
-            a.muted = false;         // falls global mal gesetzt wurde
             a.currentTime = 0;
-            a.play();
+            a.play().catch(() => { }); // <— Promise abfangen, kein Console-Error
         } catch (e) { }
     }
 
@@ -112,6 +111,9 @@ class Character extends MovableObject {
         this.loadImages(this.IMAGES_SLEEP);
         this.applyGravity();
         this.animate();
+         this.sfxHurt.volume = 0.05;
+         this.sfxJump.volume = 0.15;
+         this.sfxDead.volume = 0.15;
         this.hitboxLeft = 10;
         this.hitboxRight = 10;
         this.hitboxTop = 100;
