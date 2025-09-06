@@ -1,3 +1,7 @@
+/**
+ * Spielwelt: hält Canvas/Context, Entities, Loop/Collision,
+ * Overlays (Win/Lose) und Audio/Mute-State.
+ */
 class World {
     character = new Character();
     endboss = new Endboss();
@@ -14,42 +18,56 @@ class World {
     canThrow = true;
     paused = false;
     victoryScheduled = false;
+    defeatScheduled = false;
     sfxBossDead = new Audio('audio/win.mp3');
     muted = false;
     music = new Audio('audio/background-music.mp3');
 
+    /**
+     * @param {HTMLCanvasElement} canvas
+     * @param {Record<string, boolean>} keyboard
+     */
     constructor(canvas, keyboard) {
         this.ctx = canvas.getContext('2d');
         this.canvas = canvas;
         this.keyboard = keyboard;
         this.setupAudio();
         this.ensureVictoryOverlay();
-        this.draw();
         this.setWorld();
+        this.draw();
         this.run();
     }
 
+
+    /** Mute umschalten und UI/Audio anpassen. */
     toggleMute() {
         this.muted = !this.muted;
         localStorage.setItem('muted', this.muted ? '1' : '0');
         this.applyMuteUI();
-        if (this.muted) {
-            this.music.pause();
-        } else {
-            this.music.play().catch(() => { });
-        }
+        const m = this.muted;
+        if (this.music) this.music.muted = m;
+        if (this.sfxBossDead) this.sfxBossDead.muted = m;
+        this.character?.syncMute?.();
+        if (m) this.music.pause();
+        else this.music.play().catch(() => { });
     }
 
+    /** Mute-Button visuell updaten. */
     applyMuteUI() {
         let btn = document.querySelector('.btn-mute');
         if (btn) btn.classList.toggle('is-muted', this.muted);
     }
 
+    /** Hintergrundmusik vorbereiten (Autoplay nach erstem Pointerdown). */
     setupAudio() {
         this.music.loop = true;
-        this.music.volume = 0.01;
+        this.music.volume = 0.04;
         this.muted = localStorage.getItem('muted') === '1';
         this.applyMuteUI();
+        const m = this.muted;
+        if (this.music) this.music.muted = m;
+        if (this.sfxBossDead) this.sfxBossDead.muted = m;
+        this.character?.syncMute?.();
         const startOnce = () => {
             if (!this.muted) this.music.play().catch(() => { });
             window.removeEventListener('pointerdown', startOnce, { capture: true });
@@ -57,6 +75,7 @@ class World {
         window.addEventListener('pointerdown', startOnce, { capture: true, once: true });
     }
 
+    /** Sieges-Overlay sicherstellen (falls im DOM nicht vorhanden). */
     ensureVictoryOverlay() {
         const wrapper = document.getElementById('game') || this.canvas?.parentElement;
         if (!wrapper) return;
@@ -72,6 +91,7 @@ class World {
         this.victoryEl = el;
     }
 
+    /** Referenzen setzen & Zähler initialisieren. */
     setWorld() {
         this.character.world = this;
         this.endboss.world = this;
@@ -81,19 +101,24 @@ class World {
         this.totalBottles = this.level.bottles.length;
     }
 
+    /** Game-Loop für Logik (60 Hz). */
     run() {
-        setInterval(() => {
+        if (this._loop) clearInterval(this._loop);
+        this._loop = setInterval(() => {
             if (this.paused) return;
             this.checkCollisions();
             this.checkBossCollision();
             this.checkThrowObjects();
             this.checkCoinCollection();
             this.checkBottleCollection();
-            if (!this.keyboard.D) this.canThrow = true;
+            const kb = this.keyboard || window.keyboard || {};
+            if (!kb.D) this.canThrow = true;
             if (this.character.isDead()) this.onPlayerKilled();
         }, 1000 / 60);
     }
 
+
+    /** Seitentreffer gegen Boss prüfen. */
     checkBossCollision() {
         if (!this.endboss || this.endboss.isDead()) return;
         if (this.character.isDead()) return;
@@ -102,11 +127,17 @@ class World {
         }
     }
 
+    /**
+     * Klasse zum Ausblenden der Mobile-Buttons setzen,
+     * wenn Win/Lose-Overlay aktiv ist.
+     * @param {boolean} active
+     */
     setOverlay(active) {
         const g = this.canvas && this.canvas.parentElement;
         if (g) g.classList.toggle('has-overlay', !!active);
     }
 
+    /** Lose-Screen zeigen und pausieren. */
     onPlayerKilled() {
         if (this.defeatScheduled) return;
         this.defeatScheduled = true;
@@ -123,12 +154,15 @@ class World {
         }, frames * 50);
     }
 
+    /** Win-Screen nach Boss-Tod zeigen und pausieren. */
     onBossKilled() {
         if (this.victoryScheduled) return;
         this.victoryScheduled = true;
-        try { this.sfxBossDead.currentTime = 0; this.sfxBossDead.play(); } catch (e) { }
         const delay = (this.endboss.IMAGES_DEAD?.length || 1) * 200;
         setTimeout(() => {
+            if (!this.muted && this.sfxBossDead) {
+                try { this.sfxBossDead.currentTime = 0; this.sfxBossDead.play(); } catch (e) { }
+            }
             const el = this.victoryEl || document.getElementById('victory-overlay');
             if (el) {
                 el.classList.add('show');
@@ -139,12 +173,13 @@ class World {
         }, delay);
     }
 
+    /** Neustart der Seite (UI-Klasse zurücksetzen). */
     resetGame() {
         this.setOverlay(false);
-        location.replace(location.pathname + '?t=' + Date.now());
-        location.reload();
+        window.location.reload();
     }
 
+    /** Kollisionen mit Gegnern prüfen (Stomp/Seitentreffer) + Boss-Treffer. */
     checkCollisions() {
         for (let i = this.level.enemies.length - 1; i >= 0; i--) {
             let enemy = this.level.enemies[i];
@@ -159,12 +194,11 @@ class World {
         this.endbossHit();
     }
 
+    /** Flaschen-Treffer gegen Boss verarbeiten. */
     endbossHit() {
         for (let i = this.throwableObjects.length - 1; i >= 0; i--) {
             let b = this.throwableObjects[i];
-            if (!b.isColliding(this.endboss) || this.endboss.isDead()) {
-                continue;
-            }
+            if (!b.isColliding(this.endboss) || this.endboss.isDead()) continue;
             this.throwableObjects.splice(i, 1);
             this.endboss.hit(20);
             this.updateBossBar();
@@ -174,16 +208,17 @@ class World {
         }
     }
 
+    /** Boss-Lebensbalken aktualisieren. */
     updateBossBar() {
         let pct = (this.endboss.energy / this.endboss.maxEnergy) * 100;
         this.bossBar.setPercentage(pct);
-    }    
-
-    resetGame() {
-        this.paused = true;
-        window.location.reload();
     }
 
+    /**
+     * Kopfstoß-Erkennung: Spieler fällt von oben auf den Gegner.
+     * @param {any} enemy
+     * @returns {boolean}
+     */
     isHeadStomp(enemy) {
         let prevBottom = this.character.prevY + this.character.height;
         let currBottom = this.character.y + this.character.height;
@@ -193,30 +228,18 @@ class World {
             currBottom >= enemy.y;
     }
 
+    /** Gegner aus dem Level-Array entfernen. */
     removeEnemy(idx) {
         this.level.enemies.splice(idx, 1);
     }
 
+    /** Seitentreffer auf Spieler anwenden + Lebensbalken updaten. */
     applySideHit() {
         this.character.hit();
         this.statusBar.setPercentage(this.character.energy);
     }
 
-    handleStomp(enemy, array) {
-        let prevBottom = this.character.prevY + this.character.height;
-        let currBottom = this.character.y + this.character.height;
-        let enemyTop = enemy.y;
-        if (this.character.speedY < 0 &&
-            prevBottom <= enemyTop &&
-            currBottom >= enemyTop) {
-            let idx = array.indexOf(enemy);
-            if (idx !== -1) {
-                array.splice(idx, 1);
-            }
-        }
-        return false;
-    }
-
+    /** Münzen einsammeln und Anzeige updaten. */
     checkCoinCollection() {
         this.level.coins.forEach((coin, index) => {
             if (this.character.isColliding(coin)) {
@@ -228,6 +251,7 @@ class World {
         });
     }
 
+    /** Flaschen einsammeln und Anzeige updaten. */
     checkBottleCollection() {
         this.level.bottles.forEach((bottle, index) => {
             if (this.character.isColliding(bottle)) {
@@ -239,35 +263,40 @@ class World {
         });
     }
 
+    /** Wurf-Eingabe prüfen und ggf. Flasche erzeugen. */
     checkThrowObjects() {
-        if (this.keyboard.D &&
-            this.canThrow &&
-            this.collectedBottles > 0) {
+        const kb = this.keyboard || window.keyboard || {};
+        if (kb.D && this.canThrow && this.collectedBottles > 0) {
             this.throwBottle();
             this.canThrow = false;
         }
     }
 
+    /** Neue Flasche werfen und Anzeige anpassen. */
     throwBottle() {
-        let b = new ThrowableObject(this.character.x + 100, this.character.y + 100);
+        const c = this.character;
+        const dir = c.otherDirection ? -1 : 1;
+        const x = c.x + (dir > 0 ? c.width - 70 : 20);
+        const y = c.y + c.height * 0.50;
+        const b = new ThrowableObject(x, y, dir);
         this.throwableObjects.push(b);
         this.collectedBottles--;
-        let pct = (this.collectedBottles / this.totalBottles) * 100;
+        const pct = (this.collectedBottles / this.totalBottles) * 100;
         this.bottleBar.setPercentage(pct);
     }
 
+    /** Render-Loop (requestAnimationFrame), respektiert Pause. */
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.translate(this.camera_x, 0);
         this.addObjectsInToWorld();
         this.ctx.translate(-this.camera_x, 0);
-        let self = this;
         if (this.paused) return;
-        requestAnimationFrame(function () {
-            self.draw();
-        });
+        this._raf = requestAnimationFrame(() => this.draw());
     }
 
+
+    /** Zeichen-Reihenfolge festlegen (Hintergrund, Spieler, UI, Objekte). */
     addObjectsInToWorld() {
         this.addObjectToMap(this.level.backgroundObjects);
         this.addObjectToMap(this.level.clouds);
@@ -284,32 +313,36 @@ class World {
         this.addObjectToMap(this.throwableObjects);
     }
 
+    /** Boss + Boss-Lebensbalken zeichnen (über dem Boss positioniert). */
     addToBoss() {
         this.addToMap(this.endboss);
-        this.bossBar.x = this.endboss.x
-            + (this.endboss.width - this.bossBar.width) / 2;
+        this.bossBar.x = this.endboss.x + (this.endboss.width - this.bossBar.width) / 2;
         this.bossBar.y = this.endboss.y - 60;
         this.addToMap(this.bossBar);
     }
 
-
+    /**
+     * Array von Objekten zeichnen.
+     * @param {any[]} objects
+     */
     addObjectToMap(objects) {
-        objects.forEach(o => {
-            this.addToMap(o)
-        });
-    };
-
-    addToMap(mo) {
-        if (mo.otherDirection) {
-            this.flipCharacter(mo);
-        }
-        mo.draw(this.ctx);
-        mo.drawFrame(this.ctx);
-        if (mo.otherDirection) {
-            this.flipCharacterBack(mo);
-        }
+        if (!objects || !objects.forEach) return;
+        objects.forEach(o => this.addToMap(o));
     }
 
+    /**
+     * Einzelnes Objekt (mit evtl. Flip) zeichnen.
+     * @param {any} mo
+     */
+    addToMap(mo) {
+        if (!mo) return;
+        if (mo.otherDirection) this.flipCharacter(mo);
+        mo.draw(this.ctx);
+        mo.drawFrame?.(this.ctx);
+        if (mo.otherDirection) this.flipCharacterBack(mo);
+    }
+
+    /** Kontext spiegeln, um nach links dargestellte Sprites zu zeichnen. */
     flipCharacter(mo) {
         this.ctx.save();
         this.ctx.translate(mo.width, 0);
@@ -317,8 +350,10 @@ class World {
         mo.x = mo.x * -1;
     }
 
+    /** Spiegelung zurücksetzen. */
     flipCharacterBack(mo) {
         mo.x = mo.x * -1;
         this.ctx.restore();
     }
 }
+

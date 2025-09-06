@@ -1,7 +1,13 @@
 body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    overflow: hidden;
     background: url('img/5_background/second_half_background.png') no-repeat center fixed;
     background-size: cover;
     font-family: "Nunito", sans-serif;
@@ -22,38 +28,6 @@ canvas {
 .game {
     position: relative;
     display: inline-block;
-}
-
-.game {
-    position: relative;
-}
-
-.overlay {
-    position: absolute;
-    inset: 0;
-    display: none;
-    z-index: 100;
-    background: rgba(0, 0, 0, .45);
-}
-
-.overlay.show {
-    display: block !important;
-}
-
-.overlay-img {
-    width: 700px;
-    height: 425px;    
-    pointer-events: none;
-}
-
-.overlay-img {
-    width: 700px;
-    height: 425px;    
-    pointer-events: none;
-}
-
-.game .overlay.show {
-    display: block;
 }
 
 .game:fullscreen {
@@ -88,73 +62,6 @@ canvas {
     right: 16px;
 }
 
-.game .start-screen {
-    position: absolute;
-    inset: 0;
-    z-index: 30;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    padding: 24px;
-    background: url('img/startbildschirm.png') center / cover no-repeat;
-}
-
-.start-ui {
-    display: flex;
-    gap: 12px;
-}
-
-.btn {
-    padding: 10px 16px;
-    border-radius: 10px;
-    border: none;
-    cursor: pointer;
-    font: 600 16px "Nunito", sans-serif;
-    transition: transform .1s ease, filter .15s ease;
-    color: #fff;
-}
-
-.btn:hover {
-    transform: translateY(-1px);
-    filter: brightness(1.1);
-}
-
-.btn:active {
-    transform: scale(.98);
-}
-
-.btn--primary {
-    background: #2b6fff;
-}
-
-.btn--ghost {
-    background: #2b6fff;
-    border: 1px solid rgba(255, 255, 255, .25);
-}
-
-.game .help.hide {
-    display: none;
-}
-
-.game .help {
-    position: absolute;
-    inset: 0;
-    z-index: 40;
-    display: grid;
-    place-items: center;
-    background: rgba(0, 0, 0, .45);
-}
-
-.help-box {
-    width: 420px;
-    max-width: 90vw;
-    padding: 18px;
-    border-radius: 12px;
-    background: #0f1220;
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, .2);
-}
-
 .game .btn-mute {
     position: absolute;
     top: 8px;
@@ -181,6 +88,130 @@ canvas {
     filter: brightness(1.1);
 }
 
+.btn {
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font: 600 16px "Nunito", sans-serif;
+    color: #fff;
+    background: #2b6fff;
+    transition: transform .1s ease, filter .15s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.1);
+}
+
+.btn:active {
+    transform: scale(.98);
+}
+
+.btn--primary {
+    background: #2b6fff;
+}
+
+.btn--ghost {
+    background: #2b6fff;
+    border: 1px solid rgba(255, 255, 255, .25);
+}
+
+.game .start-screen {
+    position: absolute;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 24px;
+    background: url('img/startbildschirm.png') center / cover no-repeat;
+}
+
+.start-ui {
+    display: flex;
+    gap: 12px;
+}
+
+.game .help{
+  position: absolute;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  background: rgba(0,0,0,.45);
+}
+.game .help.hide{ display:none; }
+
+.help-box {
+    width: 420px;
+    max-width: 90vw;
+    padding: 18px;
+    border-radius: 12px;
+    background: #0f1220;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, .2);
+}
+
+.overlay {
+    position: absolute;
+    inset: 0;
+    display: none;
+    z-index: 140;
+    background: rgba(0, 0, 0, .45);
+}
+
+.overlay.show {
+    display: flex;                 /* zentrieren */
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.overlay-img {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: min(92vw, 720px);   /* begrenzen, ohne zu verzerren */
+    max-height: min(82vh, 480px);
+    object-fit: contain;
+    margin: 0 auto;
+    pointer-events: none;
+}
+
+.overlay-ui {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 24px;
+    display: flex;
+    justify-content: center;
+}
+
+.game.has-overlay .mobile-ctrls {
+    display: none;
+}
+
+.game .rotate-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 130;
+    background: rgba(0, 0, 0, .85);
+    color: #fff;
+    text-align: center;
+    padding: 24px;
+    display: none;
+}
+
+.game .rotate-overlay.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.handy {
+    width: 50px;
+}
 
 .mobile-ctrls {
     position: absolute;
@@ -217,68 +248,6 @@ canvas {
     background: rgba(0, 0, 0, .55);
 }
 
-.game:fullscreen .start-screen {
-    align-items: center;
-    justify-content: center;
-}
-
-.game .overlay {
-    position: absolute;
-    inset: 0;
-    display: none;
-    z-index: 40;
-    background: rgba(0, 0, 0, .45) center/cover no-repeat;
-}
-
-.game .overlay.show {
-    display: block;
-}
-
-.overlay-ui {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 24px;
-    display: flex;
-    justify-content: center;
-}
-
-.btn {
-    padding: 10px 16px;
-    border-radius: 10px;
-    border: none;
-    cursor: pointer;
-    font: 600 16px "Nunito", sans-serif;
-    color: #fff;
-    background: #2b6fff;
-}
-
-.btn:hover {
-    filter: brightness(1.1);
-    transform: translateY(-1px);
-}
-
-.handy {
-    width: 50px;
-}
-
-.game .rotate-overlay {
-    position: absolute;
-    inset: 0;
-    z-index: 130;
-    background: rgba(0, 0, 0, .85);
-    color: #fff;
-    text-align: center;
-    padding: 24px;
-    display: none;
-}
-
-.game .rotate-overlay.show {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
 .game.landscape {
     position: fixed;
     inset: 0;
@@ -286,32 +255,9 @@ canvas {
     height: 100vh;
 }
 
-.game.landscape canvas {
-    width: 100%;
-    height: 100%;
-}
-
-html,
-body {
-    height: 100%;
-    margin: 0;
-}
-
-body {
-    overflow: hidden;
-}
-
-.game.has-overlay .mobile-ctrls {
-    display: none;
-}
-
-
 @media (hover: none) and (pointer: coarse),
 (max-width: 900px) {
     .game.landscape {
-        position: fixed;
-        inset: 0;
-        width: 100vw;
         height: calc(var(--vh, 1vh) * 100);
     }
 }
@@ -340,14 +286,12 @@ body {
     }
 }
 
+.hide { display: none !important; }
+
 @media (pointer: fine) {
     .mobile-ctrls {
         display: none;
     }
-}
-
-.game .start-screen {
-    z-index: 80;
 }
 
 @media (pointer: coarse) {

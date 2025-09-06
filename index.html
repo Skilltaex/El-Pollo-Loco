@@ -29,7 +29,6 @@
     <script src="models/throwable-object.class.js"></script>
     <script src="models/endboss.class.js"></script>
     <script src="levels/level1.js"></script>
-    <script src="js/fullscreen.js"></script>
 </head>
 
 <body onload="">
@@ -50,33 +49,47 @@
             <button class="ctrl" data-key="SPACE">⤒</button>
             <button class="ctrl" data-key="D">🧪</button>
         </div>
-        <div class="start-screen">
+        <div id="start" class="start-screen">
             <div class="start-ui">
                 <button class="btn btn--primary" onclick="startGame()">Start</button>
                 <button class="btn btn--ghost" onclick="openHelp()">Help</button>
             </div>
         </div>
-        <div class="help hide">
-            <div class="help-box">
-                <h3>Help</h3>
-                <p>← → laufen, SPACE springen, D werfen</p>
-                <p>Die Flaschen sind nur für den boss gedacht. Die normalen Chickens werden nur mit dem drauf springen
-                    getötet</p>
-                <button class="btn" onclick="closeHelp()">OK</button>
+        <div id="help" class="help hide">
+            <div id="helpBox" class="help-box">
+                <h3 id="helpTitle">Help</h3>
+                <div id="helpContent">
+                    <p>← → laufen, SPACE springen, D werfen</p>
+                    <p>Die Flaschen sind nur für den Boss gedacht. Die normalen Chickens werden nur mit Draufspringen
+                        getötet.</p>
+                </div>
+                <div id="impressumContent">
+                    <p><strong>Impressum</strong></p>
+                    <p>Meric Kalkan / Anbieter<br>
+                        Rastenburgere 24, 68307 Mannheim<br>
+                        E-Mail: meric.kalkan@outlook.de<br>
+                        Haftungshinweis: Inhalte ohne Gewähr; externe Links unterliegen der Haftung der jeweiligen
+                        Betreiber.</p>
+                </div>
+                <div class="start-ui" style="margin-top:12px">
+                    <button id="okBtn" class="btn" onclick="closeHelp()">OK</button>
+                </div>
             </div>
         </div>
         <div id="victory-overlay" class="overlay overlay--win">
             <img class="overlay-img" src="img/You won, you lost/You Win A.png" alt="Victory">
             <div class="overlay-ui">
-                <button class="btn btn--primary restart-btn">Restart</button>
+                <button id="restartWin" class="btn btn--primary restart-btn" onclick="resetGame()">Restart</button>
             </div>
         </div>
-        <div class="overlay overlay--lose">
+
+        <div id="lose-overlay" class="overlay overlay--lose">
             <img class="overlay-img" src="img/You won, you lost/Game over A.png" alt="Defeat">
             <div class="overlay-ui">
-                <button class="btn btn--primary restart-btn">Restart</button>
+                <button id="restartLose" class="btn btn--primary restart-btn" onclick="resetGame()">Restart</button>
             </div>
         </div>
+
     </div>
 </body>
 <script src="js/controls-mobile.js" defer></script>

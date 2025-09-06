@@ -25,11 +25,11 @@ class DrawableObject {
     }
 
     drawFrame(ctx) {
-    if (this instanceof Character) {
-        let w = this.width  * (this.hitboxScaleX || 1);
-        let h = this.height * (this.hitboxScaleY || 1);
-        let x = this.x + (this.hitboxOffsetX || 0);
-        let y = this.y + (this.hitboxOffsetY || 0);       
+        if (this instanceof Character) {
+            let w = this.width * (this.hitboxScaleX || 1);
+            let h = this.height * (this.hitboxScaleY || 1);
+            let x = this.x + (this.hitboxOffsetX || 0);
+            let y = this.y + (this.hitboxOffsetY || 0);
+        }
     }
-}
 }

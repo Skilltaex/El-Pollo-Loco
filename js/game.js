@@ -10,33 +10,62 @@ function init() {
 }
 
 function openHelp() {
-    const s = document.querySelector('.start-screen');
-    const h = document.querySelector('.help');
-    if (h) h.classList.remove('hide');   
-    if (s) s.style.display = 'none';
+    let help = document.getElementById('help');
+    if (help) help.classList.remove('hide');
 }
 
 function closeHelp() {
-    const s = document.querySelector('.start-screen');
-    const h = document.querySelector('.help');
-    if (h) h.classList.add('hide');   
-    if (s) s.style.display = '';
+    let help = document.getElementById('help');
+    if (help) help.classList.add('hide');
 }
 
-window.addEventListener("keydown", (e) => {
-    if (e.keyCode == 39) keyboard.RIGHT = true;
-    if (e.keyCode == 37) keyboard.LEFT  = true;
-    if (e.keyCode == 38) keyboard.UP    = true;
-    if (e.keyCode == 40) keyboard.DOWN  = true;
-    if (e.keyCode == 32) keyboard.SPACE = true;
-    if (e.keyCode == 68) keyboard.D     = true;
+window.addEventListener('keydown', (e) => {
+    if (!window.keyboard) return;
+    const k = e.key;
+    if (k === 'ArrowLeft') window.keyboard.LEFT = true;
+    if (k === 'ArrowRight') window.keyboard.RIGHT = true;
+    if (k === ' ' || k === 'Spacebar' || k === 'Space') window.keyboard.SPACE = true;
+    if (k === 'd' || k === 'D') window.keyboard.D = true;
 });
 
-window.addEventListener("keyup", (e) => {
-    if (e.keyCode == 39) keyboard.RIGHT = false;
-    if (e.keyCode == 37) keyboard.LEFT  = false;
-    if (e.keyCode == 38) keyboard.UP    = false;
-    if (e.keyCode == 40) keyboard.DOWN  = false;
-    if (e.keyCode == 32) keyboard.SPACE = false;
-    if (e.keyCode == 68) keyboard.D     = false;
+window.addEventListener('keyup', (e) => {
+    if (!window.keyboard) return;
+    const k = e.key;
+    if (k === 'ArrowLeft') window.keyboard.LEFT = false;
+    if (k === 'ArrowRight') window.keyboard.RIGHT = false;
+    if (k === ' ' || k === 'Spacebar' || k === 'Space') window.keyboard.SPACE = false;
+    if (k === 'd' || k === 'D') window.keyboard.D = false;
 });
+
+function toggleFullscreen() {
+    const el = document.querySelector('.game');
+    if (!document.fullscreenElement) {
+        el && el.requestFullscreen && el.requestFullscreen();
+    } else {
+        document.exitFullscreen && document.exitFullscreen();
+    }
+}
+
+function startGame() {
+    const s = document.getElementById('start');
+    if (s) s.classList.add('hide');
+}
+
+function resetGame() {
+  if (this._loop) { clearInterval(this._loop); this._loop = null; }
+  if (this._raf)  { cancelAnimationFrame(this._raf); this._raf = null; }
+  this.paused = true;
+  this.character?.stopLoops?.();
+  this.endboss?.stop?.();
+  this.level?.enemies?.forEach(e => e?.stop?.());
+  this.throwableObjects?.forEach(t => t?.stop?.());
+  const kb = this.keyboard || window.keyboard || {};
+  kb.LEFT = kb.RIGHT = kb.SPACE = kb.D = false;
+  document.getElementById('victory-overlay')?.classList.remove('show');
+  document.querySelector('.overlay--lose')?.classList.remove('show');
+  this.setOverlay?.(false);
+  (document.getElementById('start') || document.querySelector('.start-screen'))?.classList.remove('hide');
+  window.world = null;
+}
+
+window.addEventListener('load', init);
