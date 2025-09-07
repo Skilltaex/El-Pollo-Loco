@@ -111,9 +111,9 @@ class Character extends MovableObject {
         this.loadImages(this.IMAGES_SLEEP);
         this.applyGravity();
         this.animate();
-         this.sfxHurt.volume = 0.05;
-         this.sfxJump.volume = 0.15;
-         this.sfxDead.volume = 0.15;
+        this.sfxHurt.volume = 0.05;
+        this.sfxJump.volume = 0.15;
+        this.sfxDead.volume = 0.15;
         this.hitboxLeft = 10;
         this.hitboxRight = 10;
         this.hitboxTop = 100;
@@ -146,7 +146,6 @@ class Character extends MovableObject {
         if (this.world?.paused) return;
         const kb = this.world.keyboard || {};
         let moved = false;
-
         if (kb.RIGHT && this.x < this.world.level.level_ende_x) {
             this.moveRight(); this.otherDirection = false; moved = true;
         }
@@ -172,15 +171,13 @@ class Character extends MovableObject {
         }
         if (this.isHurt()) return this.playAnimation(this.IMAGES_HURT);
         if (this.isAboveGround()) return this.playAnimation(this.IMAGES_JUMPING);
-
         const moving = this.world.keyboard.RIGHT || this.world.keyboard.LEFT;
         if (moving) return this.playAnimation(this.IMAGES_WALKING);
-
         const idleFor = (Date.now() - this.lastInputTs) / 1000;
         if (idleFor > 8 && this.IMAGES_SLEEP?.length) {
-            return this.playAnimation(this.IMAGES_SLEEP);   // Sleep
+            return this.playAnimation(this.IMAGES_SLEEP);
         }
-        return this.playAnimation(this.IMAGES_IDLE?.length ? this.IMAGES_IDLE : this.IMAGES_WALKING); // Idle
+        return this.playAnimation(this.IMAGES_IDLE?.length ? this.IMAGES_IDLE : this.IMAGES_WALKING);
     }
 
     /** Schaden anwenden; spielt Hurt-Sound, wenn nicht tot. */
