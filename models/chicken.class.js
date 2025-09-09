@@ -1,5 +1,5 @@
 /**
- * Gegner (Chicken): läuft links, spielt Walk/Dead-Frames.
+ * Enemy (Chicken): walks left and plays walk/dead animations.
  * @extends MovableObject
  */
 class Chicken extends MovableObject {
@@ -17,7 +17,9 @@ class Chicken extends MovableObject {
     'img/3_enemies_chicken/chicken_normal/2_dead/dead.png'
   ];
 
-  /** Lädt Assets, setzt Startposition/-speed und startet Loops. */
+  /**
+   * Loads assets, sets random start position/speed and starts loops.
+   */
   constructor() {
     super().loadImage('img/3_enemies_chicken/chicken_normal/1_walk/1_w.png');
     this.loadImages(this.IMAGES_WALKING);
@@ -27,7 +29,9 @@ class Chicken extends MovableObject {
     this.animate();
   }
 
-  /** Startet Bewegungs- und Animationsintervalle. */
+  /**
+   * Starts movement and animation intervals.
+   */
   animate() {
     this.walkInterval = setInterval(() => {
       if (!this.isDead()) this.moveLeft();
@@ -42,17 +46,22 @@ class Chicken extends MovableObject {
     }, 200);
   }
 
-  /** Markiert als tot, zeigt Dead-Frame und räumt auf. */
+  /**
+   * Marks as dead, shows dead frame and stops intervals.
+   */
   die() {
     this.energy = 0;
     this.img = this.imageCache[this.IMAGES_DEAD[0]];
     this.stop();
   }
   
-  /** Stoppt beide Intervalle. */
+  /**
+   * Stops both intervals.
+   */
   stop() {
     clearInterval(this.walkInterval);
     clearInterval(this.animationInterval);
   }
 }
+
 

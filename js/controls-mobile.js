@@ -1,8 +1,7 @@
 /**
- * Setzt eine Taste aktiv und markiert den Button.
- * Erwartet ein globales `window.keyboard`-Objekt.
- * @param {'LEFT'|'RIGHT'|'SPACE'|'D'} key
- * @param {HTMLElement} [btn]
+ * Activates a key in the global keyboard state and highlights the button.
+ * @param {'LEFT'|'RIGHT'|'SPACE'|'D'} key - The key to activate.
+ * @param {HTMLElement} [btn] - Optional button element to highlight.
  */
 function pressKey(key, btn) {
     if (!window.keyboard) return;
@@ -11,9 +10,9 @@ function pressKey(key, btn) {
 }
 
 /**
- * Setzt eine Taste inaktiv und entmarkiert den Button.
- * @param {'LEFT'|'RIGHT'|'SPACE'|'D'} key
- * @param {HTMLElement} [btn]
+ * Deactivates a key in the global keyboard state and removes button highlight.
+ * @param {'LEFT'|'RIGHT'|'SPACE'|'D'} key - The key to deactivate.
+ * @param {HTMLElement} [btn] - Optional button element to un-highlight.
  */
 function releaseKey(key, btn) {
     if (!window.keyboard) return;
@@ -22,9 +21,9 @@ function releaseKey(key, btn) {
 }
 
 /**
- * Bindet Pointer-Events an einen Control-Button (Multi-Touch-sicher).
- * Keine Doppeltrigger (kein separater mouse/touch Pfad).
- * @param {HTMLElement} btn
+ * Binds pointer events to a control button.
+ * Ensures multi-touch support and avoids duplicate triggers.
+ * @param {HTMLElement} btn - Button with a `data-key` attribute.
  */
 function bindControl(btn) {
     const key = btn.dataset.key;
@@ -60,8 +59,8 @@ function bindControl(btn) {
 }
 
 /**
- * Verhindert Scrollen innerhalb des Wrappers auf Touch-Geräten.
- * @param {HTMLElement} wrap
+ * Prevents scrolling inside the wrapper on touch devices.
+ * @param {HTMLElement} wrap - The wrapper element, e.g. `.mobile-ctrls`.
  */
 function blockTouchScroll(wrap) {
     if (!wrap) return;
@@ -69,8 +68,8 @@ function blockTouchScroll(wrap) {
 }
 
 /**
- * Setzt Eingaben zurück, wenn der Tab/Viewport den Fokus verliert.
- * @param {HTMLElement} wrap
+ * Resets all inputs when the tab or viewport loses focus.
+ * @param {HTMLElement} wrap - Wrapper containing the buttons.
  */
 function addBlurFailsafe(wrap) {
     const clear = () => {
@@ -83,8 +82,9 @@ function addBlurFailsafe(wrap) {
 }
 
 /**
- * Initialisiert die Mobile-Controls unterhalb des Roots.
- * @param {string} [root='.mobile-ctrls']
+ * Initializes mobile controls below the root element.
+ * Binds all buttons with `data-key` and sets up scroll/blur safety.
+ * @param {string} [root='.mobile-ctrls'] - Selector for the control wrapper.
  */
 function setupMobileControls(root = '.mobile-ctrls') {
     const wrap = document.querySelector(root);
@@ -95,8 +95,8 @@ function setupMobileControls(root = '.mobile-ctrls') {
 }
 
 /**
- * Prüft „Handy“-Kontext (coarse Pointer oder kleiner Viewport).
- * @returns {boolean}
+ * Detects if the environment is a mobile/tablet device.
+ * @returns {boolean} True if coarse pointer or small viewport is detected.
  */
 function isHandy() {
     const coarse = window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
@@ -105,8 +105,9 @@ function isHandy() {
 }
 
 /**
- * Zeigt/verbirgt das Rotate-Overlay und toggelt `.landscape`.
- * Aktiv nur auf Handy; auf Desktop bleibt alles unverändert.
+ * Updates the rotate overlay and toggles `.landscape` mode.
+ * Only active on mobile; desktop view remains unchanged.
+ * Called on load, resize, and orientationchange.
  */
 function updateRotateOverlay() {
     const rotate = document.getElementById('rotate-lock');
@@ -132,6 +133,7 @@ function updateRotateOverlay() {
 window.addEventListener('load', updateRotateOverlay);
 window.addEventListener('resize', updateRotateOverlay);
 window.addEventListener('orientationchange', updateRotateOverlay);
+
 
 
 

@@ -1,3 +1,8 @@
+/**
+ * Boss health bar: shows boss HP in steps of 20%.
+ * Extends DrawableObject to render images from cache.
+ * @extends DrawableObject
+ */
 class BossBar extends DrawableObject {
     percentage = 100;
 
@@ -16,6 +21,9 @@ class BossBar extends DrawableObject {
         'img/4_enemie_boss_chicken/5_dead/G26.png',
     ];
 
+    /**
+     * Loads health bar images and sets initial percentage.
+     */
     constructor() {
         super();
         this.loadImages(this.IMAGES_HEALTH);
@@ -24,28 +32,28 @@ class BossBar extends DrawableObject {
         this.setPercentage(this.percentage);
     }
 
+    /**
+     * Updates bar position, percentage and image.
+     */
     setPercentage(p) {
         this.x = 1000;
         this.y = 40;
         this.percentage = p;
-        let idx = this.resolveImageIndex();
-        let path = this.IMAGES_HEALTH[idx];
+        const idx = this.resolveImageIndex();
+        const path = this.IMAGES_HEALTH[idx];
         this.img = this.imageCache[path];
     }
 
+    /**
+     * Resolves index of image based on current percentage.
+     * @returns {number} Index of image in IMAGES_HEALTH
+     */
     resolveImageIndex() {
-        if (this.percentage == 100) {
-            return 5;
-        } else if (this.percentage >= 80) {
-            return 4;
-        } else if (this.percentage >= 60) {
-            return 3;
-        } else if (this.percentage >= 40) {
-            return 2;
-        } else if (this.percentage >= 20) {
-            return 1;
-        } else {
-            return 0;
-        }
+        if (this.percentage == 100) return 5;
+        if (this.percentage >= 80) return 4;
+        if (this.percentage >= 60) return 3;
+        if (this.percentage >= 40) return 2;
+        if (this.percentage >= 20) return 1;
+        return 0;
     }
 }

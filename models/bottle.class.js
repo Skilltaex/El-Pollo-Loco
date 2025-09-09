@@ -6,6 +6,10 @@ class Bottle extends MovableObject {
     constructor() {
         super().loadImage('img/6_salsa_bottle/salsa_bottle.png');        
         this.x = 200 + Math.random() * 2200;              
-        this.hitboxLeft = this.hitboxRight = this.hitboxTop = this.hitboxBottom = 20;   
+        this.hitboxLeft = this.hitboxRight = this.hitboxTop = this.hitboxBottom = 20;
+        this.hitboxLeft = 62;
+        this.hitboxRight = 62;
+        this.hitboxTop = 85;
+        this.hitboxBottom = 85;   
     }    
 }

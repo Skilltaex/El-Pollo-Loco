@@ -83,10 +83,11 @@ class Character extends MovableObject {
      * @param {HTMLAudioElement} a
      */
     playSfx(a) {
-        if (this.world?.muted || !this.world?.audioReady) return; // <— Guard
+        if (!window.__userInteracted || this.world?.muted) return;
+        if (this.world?.muted || !this.world?.audioReady) return;
         try {
             a.currentTime = 0;
-            a.play().catch(() => { }); // <— Promise abfangen, kein Console-Error
+            a.play().catch(() => { });
         } catch (e) { }
     }
 

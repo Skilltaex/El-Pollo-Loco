@@ -15,6 +15,10 @@ class Coin extends MovableObject {
         this.y = 60 + Math.random() * 120; 
         this.hitboxLeft = this.hitboxRight = this.hitboxTop = this.hitboxBottom = 110;
         this.animate();
+        this.hitboxLeft = 72;
+        this.hitboxRight = 72;
+        this.hitboxTop = 72;
+        this.hitboxBottom = 72;
     }
 
     animate() {

@@ -1,6 +1,6 @@
 /**
- * Wurfobjekt (Flasche): rotiert beim Flug, fällt zu Boden,
- * zerschellt und spielt Splash-Frames ab. Entfernt sich danach aus der Welt.
+ * Throwable object (bottle): rotates while flying, falls down,
+ * breaks on impact, and plays splash frames before being removed from the world.
  * @extends MovableObject
  */
 class ThrowableObject extends MovableObject {
@@ -26,8 +26,7 @@ class ThrowableObject extends MovableObject {
   ];
 
   /**
-   * @param {number} x Start-X
-   * @param {number} y Start-Y
+   * Creates a throwable bottle at the given position and direction.
    */
   constructor(x, y, dir = 1) {
     super();
@@ -42,11 +41,14 @@ class ThrowableObject extends MovableObject {
     this.throw();
   }
 
+  /**
+   * Starts the throw movement with gravity and rotation.
+   */
   throw() {
     this.speedY = 22;
     this.applyGravity();
     this.animateRotation();
-    const vx = 12 * (this.dir || 1);
+    const vx = 6 * (this.dir || 1);
     this.moveInterval = setInterval(() => {
       this.x += vx;      
       if (!this.isBroken && this.speedY <= 0 && this.y >= ThrowableObject.FLOOR_Y) {
@@ -55,7 +57,9 @@ class ThrowableObject extends MovableObject {
     }, 20);
   }
 
-  /** Dreht die Flasche zyklisch während des Flugs. */
+  /**
+   * Cycles through rotation images during flight.
+   */
   animateRotation() {
     let i = 0;
     this.rotationInterval = setInterval(() => {
@@ -64,20 +68,28 @@ class ThrowableObject extends MovableObject {
     }, 20);
   }
 
-  /** Markiert als zerbrochen, stoppt Bewegung/Rotation und startet Splash. */
-    breakBottle() {
+  /**
+   * Marks the bottle as broken, stops movement/rotation,
+   * and starts splash animation.
+   */
+  breakBottle() {
     if (this.isBroken) return;
     this.isBroken = true;
     this.stop();
     this.animateSplash();
   }
 
+  /**
+   * Stops all active intervals (movement & rotation).
+   */
   stop() {
     clearInterval(this.moveInterval);
     clearInterval(this.rotationInterval);
   }
 
-  /** Splash-Frames abspielen und Objekt danach aus der Welt entfernen. */
+  /**
+   * Plays splash animation frames and removes bottle from world.
+   */
   animateSplash() {
     let i = 0;
     const len = this.SPLASH_IMAGES.length;
@@ -93,11 +105,6 @@ class ThrowableObject extends MovableObject {
       }
     }, 50);
   }
-
-  /** Hilfsfunktion: stoppt alle laufenden Intervalle. */
-  stop() {
-    clearInterval(this.moveInterval);
-    clearInterval(this.rotationInterval);
-  }
 }
+
 
