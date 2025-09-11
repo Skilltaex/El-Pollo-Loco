@@ -15,9 +15,6 @@ class CoinBar extends DrawableObject {
         'img/7_statusbars/1_statusbar/1_statusbar_coin/green/100.png'
     ];
 
-    /**
-     * Loads coin bar images and sets initial percentage to 0.
-     */
     constructor() {
         super();
         this.loadImages(this.IMAGES_COINSBAR);

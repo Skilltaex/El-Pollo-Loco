@@ -1,3 +1,8 @@
+/**
+ * Coin collectible object.
+ * Spins continuously and can be collected by the player.
+ * @extends MovableObject
+ */
 class Coin extends MovableObject {
     y = 100;
     height = 200;
@@ -12,8 +17,7 @@ class Coin extends MovableObject {
         super().loadImage('img/8_coin/coin_1.png');
         this.loadImages(this.IMAGES_COIN);
         this.x = 200 + Math.random() * 2200;
-        this.y = 60 + Math.random() * 120; 
-        this.hitboxLeft = this.hitboxRight = this.hitboxTop = this.hitboxBottom = 110;
+        this.y = 60 + Math.random() * 120;         
         this.animate();
         this.hitboxLeft = 72;
         this.hitboxRight = 72;
@@ -21,6 +25,9 @@ class Coin extends MovableObject {
         this.hitboxBottom = 72;
     }
 
+    /**
+     * Plays the coin spin animation in a loop.
+     */
     animate() {
         setInterval(() => {
             this.playAnimation(this.IMAGES_COIN);

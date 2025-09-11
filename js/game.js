@@ -73,13 +73,10 @@ function toggleFullscreen() {
  */
 function startGame() {
   if (started) return;
-
   const s = document.getElementById('start') || document.querySelector('.start-screen');
   if (s) s.classList.add('hide');
-
   const canvas = document.getElementById('canvas');
   if (!canvas) return;
-
   world = new World(canvas, keyboard);
   window.world = world;
   started = true;

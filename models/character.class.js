@@ -1,17 +1,11 @@
 /**
- * Spieler-Charakter (Pepe): Bewegung, Animationen, Sounds.
- * Tasten: LEFT, RIGHT, SPACE. Nutzt world.keyboard und world.paused.
- * @extends MovableObject
+ * Player character: movement, animations and SFX hooks.
  */
 class Character extends MovableObject {
     world;
     height = 280;
     y = 60;
     speed = 20;
-    sfxJump = new Audio('audio/jump.mp3');
-    sfxHurt = new Audio('audio/hurt.mp3');
-    sfxDead = new Audio('audio/dead.mp3');
-    sfxWalk = new Audio('audio/walking.mp3');
     deadPlayed = false;
     lastInputTs = Date.now();
 
@@ -78,30 +72,14 @@ class Character extends MovableObject {
         'img/2_character_pepe/1_idle/long_idle/I-20.png',
     ];
 
+    // Simple SFX (no manager)
+    sfxJump = new Audio('audio/jump.mp3');
+    sfxHurt = new Audio('audio/hurt.mp3');
+    sfxDead = new Audio('audio/dead.mp3');
+
     /**
-     * Audio sicher abspielen (setzt currentTime zurück).
-     * @param {HTMLAudioElement} a
+     * Loads textures, configures audio/physics and starts loops.
      */
-    playSfx(a) {
-        if (!window.__userInteracted || this.world?.muted) return;
-        if (this.world?.muted || !this.world?.audioReady) return;
-        try {
-            a.currentTime = 0;
-            a.play().catch(() => { });
-        } catch (e) { }
-    }
-
-    /** Mute-Status vom World-Flag auf alle Character-Sounds spiegeln. */
-    syncMute() {
-        const m = !!this.world?.muted;
-        [this.sfxJump, this.sfxHurt, this.sfxDead, this.sfxWalk].forEach(a => {
-            if (!a) return;
-            a.muted = m;
-            if (m) { try { a.pause(); } catch (e) { } }
-        });
-    }
-
-    /** Lädt Assets, startet Physik & Loops. */
     constructor() {
         super().loadImage('img/2_character_pepe/1_idle/idle/I-1.png');
         this.loadImages(this.IMAGES_WALKING);
@@ -110,59 +88,73 @@ class Character extends MovableObject {
         this.loadImages(this.IMAGES_HURT);
         this.loadImages(this.IMAGES_IDLE);
         this.loadImages(this.IMAGES_SLEEP);
+        this.sfxHurt.volume = 0.08;
+        this.sfxJump.volume = 0.15;
+        this.sfxDead.volume = 0.18;
+        this.hitboxLeft = 10; this.hitboxRight = 10; this.hitboxTop = 100; this.hitboxBottom = 10;
         this.applyGravity();
         this.animate();
-        this.sfxHurt.volume = 0.05;
-        this.sfxJump.volume = 0.15;
-        this.sfxDead.volume = 0.15;
-        this.hitboxLeft = 10;
-        this.hitboxRight = 10;
-        this.hitboxTop = 100;
-        this.hitboxBottom = 10;
     }
 
-    /** Startet die Animations-/Bewegungs-Loops. */
+    /**
+     * Mirrors the world's mute state to character-local audio elements.
+     */
+    syncMute() {
+        const m = !!this.world?.muted;
+        [this.sfxJump, this.sfxHurt, this.sfxDead].forEach(a => { a.muted = m; if (m) { try { a.pause(); } catch { } } });
+    }
+
+    /**
+     * Safely plays a one-shot SFX with user-gesture and mute guards.
+     */
+    playSfx(a) {
+        if (!window.__userInteracted) return;
+        if (!this.world?.audioReady) return;
+        if (this.world?.muted) return;
+        try { a.currentTime = 0; a.play().catch(() => { }); } catch { }
+    }
+
+    /**
+     * Starts animation/movement loops.
+     */
     animate() {
         this.startLoops();
     }
 
-    /** Timer für Bewegung (40 FPS) und Animation (20 FPS) setzen. */
+    /**
+     * Creates timers for movement and frame animation.
+     */
     startLoops() {
         this.stopLoops();
-        this._moveTimer = setInterval(() => this.tickMove(), 1000 / 25);
-        this._animTimer = setInterval(() => this.tickAnim(), 60);
-    }
-
-    /** Timer stoppen. */
-    stopLoops() {
-        if (this._moveTimer) { clearInterval(this._moveTimer); this._moveTimer = null; }
-        if (this._animTimer) { clearInterval(this._animTimer); this._animTimer = null; }
+        this.moveTimer = setInterval(() => this.tickMove(), 1000 / 25);
+        this.animTimer = setInterval(() => this.tickAnim(), 60);
     }
 
     /**
-     * Input & Bewegung (RIGHT/LEFT/SPACE) + Kamera-Offset.
-     * Wird ca. 40x pro Sekunde ausgeführt.
+     * Clears timers if present.
+     */
+    stopLoops() {
+        if (this.moveTimer) clearInterval(this.moveTimer);
+        if (this.animTimer) clearInterval(this.animTimer);
+        this.moveTimer = this.animTimer = null;
+    }
+
+    /**
+     * Handles input (left/right/jump) and updates the side-scrolling camera.
      */
     tickMove() {
         if (this.world?.paused) return;
         const kb = this.world.keyboard || {};
         let moved = false;
-        if (kb.RIGHT && this.x < this.world.level.level_ende_x) {
-            this.moveRight(); this.otherDirection = false; moved = true;
-        }
-        if (kb.LEFT && this.x > 0) {
-            this.moveLeft(); this.otherDirection = true; moved = true;
-        }
-        if (kb.SPACE && !this.isAboveGround()) {
-            this.jump(); this.playSfx(this.sfxJump); moved = true;
-        }
+        if (kb.RIGHT && this.x < this.world.level.level_ende_x) { this.moveRight(); this.otherDirection = false; moved = true; }
+        if (kb.LEFT && this.x > 0) { this.moveLeft(); this.otherDirection = true; moved = true; }
+        if (kb.SPACE && !this.isAboveGround()) { this.jump(); this.playSfx(this.sfxJump); moved = true; }
         if (moved) this.lastInputTs = Date.now();
         this.world.camera_x = -this.x + 100;
     }
 
     /**
-     * Wählt und spielt passende Animations-Sequenz (dead/hurt/jump/walk).
-     * Wird ca. 20x pro Sekunde ausgeführt.
+     * Picks and plays the correct animation sequence for current state.
      */
     tickAnim() {
         if (this.world?.paused) return;
@@ -175,13 +167,13 @@ class Character extends MovableObject {
         const moving = this.world.keyboard.RIGHT || this.world.keyboard.LEFT;
         if (moving) return this.playAnimation(this.IMAGES_WALKING);
         const idleFor = (Date.now() - this.lastInputTs) / 1000;
-        if (idleFor > 8 && this.IMAGES_SLEEP?.length) {
-            return this.playAnimation(this.IMAGES_SLEEP);
-        }
+        if (idleFor > 8 && this.IMAGES_SLEEP?.length) return this.playAnimation(this.IMAGES_SLEEP);
         return this.playAnimation(this.IMAGES_IDLE?.length ? this.IMAGES_IDLE : this.IMAGES_WALKING);
     }
 
-    /** Schaden anwenden; spielt Hurt-Sound, wenn nicht tot. */
+    /**
+     * Applies damage and plays the hurt sound if still alive.
+     */
     hit() {
         super.hit();
         if (!this.isDead()) this.playSfx(this.sfxHurt);

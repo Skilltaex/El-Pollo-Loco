@@ -1,5 +1,6 @@
 /**
- * Game world: holds canvas/context, entities, main loops, overlays and audio.
+ * Game world: canvas/context wiring, entities, loops, overlays and audio.
+ * Uses a simple, stable audio model (muted + audioReady) with pointer unlock.
  */
 class World {
   character = new Character();
@@ -16,48 +17,37 @@ class World {
   paused = false;
   victoryScheduled = false;
   defeatScheduled = false;
+
+  // Audio state (simple & robust)
   music = new Audio('audio/background-music.mp3');
   sfxBossDead = new Audio('audio/win.mp3');
   muted = false;
   audioReady = false;
-  _loop = null; _raf = null;
 
-  /** Constructs a world and starts draw/logic loops. */
+  loop = null;
+  raf = null;
+
+  /**
+   * Builds the world, prepares audio/overlays, then starts loops.
+   */
   constructor(canvas, keyboard) {
     this.ctx = canvas.getContext('2d');
     this.canvas = canvas;
     this.keyboard = keyboard;
     this.setupAudio();
-    this.ensureVictoryOverlay();
+    this.ensureVictoryOverlay();    
     this.setWorld();
     this.draw();
     this.run();
   }
 
-  /** Toggles mute and syncs UI/audio. */
-  toggleMute() {
-    this.muted = !this.muted;
-    localStorage.setItem('muted', this.muted ? '1' : '0');
-    this.applyMuteUI();
-    const m = this.muted;
-    this.music.muted = m;
-    this.sfxBossDead.muted = m;
-    this.character?.syncMute?.();
-    if (!m && this.audioReady) this.music.play().catch(() => {});
-    if (m) this.music.pause();
-  }
-
-  /** Updates mute button UI. */
-  applyMuteUI() {
-    const btn = document.querySelector('.btn-mute');
-    if (btn) btn.classList.toggle('is-muted', this.muted);
-  }
-
-  /** Prepares background music; unlocks on first pointer interaction. */
+  /**
+   * Prepares background music and win SFX, restores mute, and unlocks audio on first user gesture.
+   */
   setupAudio() {
     this.music.loop = true;
-    this.music.volume = 0.010;
-    this.sfxBossDead.volume = 0.15;
+    this.music.volume = 0.05;
+    this.sfxBossDead.volume = 0.2;
     this.muted = localStorage.getItem('muted') === '1';
     this.applyMuteUI();
     this.music.muted = this.muted;
@@ -65,13 +55,40 @@ class World {
     this.character?.syncMute?.();
     const unlock = () => {
       this.audioReady = true;
-      if (!this.muted) this.music.play().catch(() => {});
+      if (!this.muted) { try { this.music.play().catch(() => { }); } catch { } }
       window.removeEventListener('pointerdown', unlock, { capture: true });
     };
     window.addEventListener('pointerdown', unlock, { capture: true, once: true });
   }
 
-  /** Ensures the victory overlay element exists. */
+  /**
+   * Toggles the global mute state and syncs all audio/UI.
+   */
+  toggleMute() {
+    this.muted = !this.muted;
+    localStorage.setItem('muted', this.muted ? '1' : '0');
+    this.applyMuteUI();
+    this.music.muted = this.muted;
+    this.sfxBossDead.muted = this.muted;
+    this.character?.syncMute?.();
+    if (this.muted) {
+      try { this.music.pause(); } catch { }
+    } else if (this.audioReady) {
+      try { this.music.play().catch(() => { }); } catch { }
+    }
+  }
+
+  /**
+   * Reflects the mute state on the button icon.
+   */
+  applyMuteUI() {
+    const btn = document.querySelector('.btn-mute');
+    if (btn) btn.classList.toggle('is-muted', this.muted);
+  }
+
+  /**
+   * Ensures that the victory overlay element exists in the DOM.
+   */
   ensureVictoryOverlay() {
     const wrapper = document.getElementById('game') || this.canvas?.parentElement;
     if (!wrapper) return;
@@ -87,7 +104,9 @@ class World {
     this.victoryEl = el;
   }
 
-  /** Injects references and resets counters. */
+  /**
+   * Wires references between world and entities and resets counters.
+   */
   setWorld() {
     this.character.world = this;
     this.endboss.world = this;
@@ -97,10 +116,12 @@ class World {
     this.totalBottles = this.level.bottles.length;
   }
 
-  /** Main logic loop (60 FPS). */
+  /**
+   * Starts the fixed-step game logic loop.
+   */
   run() {
-    if (this._loop) clearInterval(this._loop);
-    this._loop = setInterval(() => {
+    if (this.loop) clearInterval(this.loop);
+    this.loop = setInterval(() => {
       if (this.paused) return;
       this.checkCollisions();
       this.checkBossCollision();
@@ -113,7 +134,9 @@ class World {
     }, 1000 / 60);
   }
 
-  /** Checks side hit against boss. */
+  /**
+   * Detects side collision with the endboss and applies damage to the player.
+   */
   checkBossCollision() {
     if (!this.endboss || this.endboss.isDead()) return;
     if (this.character.isDead()) return;
@@ -122,16 +145,21 @@ class World {
     }
   }
 
-  /** Adds/removes class to hide mobile buttons while overlay is shown. */
+  /**
+   * Adds or removes a class that hides mobile controls while overlays are shown.
+   */
   setOverlay(active) {
     const g = this.canvas && this.canvas.parentElement;
     if (g) g.classList.toggle('has-overlay', !!active);
   }
 
-  /** Shows lose screen and pauses. */
+  /**
+   * Shows the lose screen, pauses the world, and stops background music immediately.
+   */
   onPlayerKilled() {
     if (this.defeatScheduled) return;
     this.defeatScheduled = true;
+    try { this.music.pause(); } catch { }
     const frames = this.character.IMAGES_DEAD?.length || 1;
     setTimeout(() => {
       const el = document.querySelector('.overlay--lose');
@@ -145,13 +173,18 @@ class World {
     }, frames * 50);
   }
 
-  /** Shows win screen after boss death and pauses. */
+  /**
+   * Shows the win screen, pauses the world, stops music, and plays the win sound.
+   */
   onBossKilled() {
     if (this.victoryScheduled) return;
     this.victoryScheduled = true;
+    try { this.music.pause(); } catch { }
     const delay = (this.endboss.IMAGES_DEAD?.length || 1) * 200;
     setTimeout(() => {
-      if (!this.muted) { try { this.sfxBossDead.currentTime = 0; this.sfxBossDead.play(); } catch (_) {} }
+      if (!this.muted) {
+        try { this.sfxBossDead.currentTime = 0; this.sfxBossDead.play().catch(() => { }); } catch { }
+      }
       const el = this.victoryEl || document.getElementById('victory-overlay');
       if (el) {
         el.classList.add('show');
@@ -162,13 +195,17 @@ class World {
     }, delay);
   }
 
-  /** Full page reload to ensure a hard reset. */
+  /**
+   * Performs a hard reset by reloading the page.
+   */
   resetGame() {
     this.setOverlay(false);
     window.location.reload();
   }
 
-  /** Checks collisions with enemies (stomp/side) + boss hit by bottle. */
+  /**
+   * Handles enemy collisions (stomp/side) and delegates boss hits to bottles.
+   */
   checkCollisions() {
     for (let i = this.level.enemies.length - 1; i >= 0; i--) {
       const enemy = this.level.enemies[i];
@@ -183,7 +220,9 @@ class World {
     this.endbossHit();
   }
 
-  /** Applies bottle hits to endboss and updates boss bar. */
+  /**
+   * Applies bottle hits to the endboss and updates the boss bar.
+   */
   endbossHit() {
     for (let i = this.throwableObjects.length - 1; i >= 0; i--) {
       const b = this.throwableObjects[i];
@@ -195,34 +234,44 @@ class World {
     }
   }
 
-  /** Updates boss health bar. */
+  /**
+   * Updates the boss health bar percentage.
+   */
   updateBossBar() {
     const pct = (this.endboss.energy / this.endboss.maxEnergy) * 100;
     this.bossBar.setPercentage(pct);
   }
 
-  /** True when player falls on top of an enemy. */
+  /**
+   * True when the player collides from above while falling.
+   */
   isHeadStomp(enemy) {
     const prevBottom = this.character.prevY + this.character.height;
     const currBottom = this.character.y + this.character.height;
     return enemy instanceof Chicken &&
-           this.character.speedY < 0 &&
-           prevBottom <= enemy.y &&
-           currBottom >= enemy.y;
+      this.character.speedY < 0 &&
+      prevBottom <= enemy.y &&
+      currBottom >= enemy.y;
   }
 
-  /** Removes enemy at index from level. */
+  /**
+   * Removes an enemy from the level by array index.
+   */
   removeEnemy(idx) {
     this.level.enemies.splice(idx, 1);
   }
 
-  /** Applies side hit to player and updates health bar. */
+  /**
+   * Applies side damage to the player and updates the health bar.
+   */
   applySideHit() {
     this.character.hit();
     this.statusBar.setPercentage(this.character.energy);
   }
 
-  /** Collects coins and updates UI. */
+  /**
+   * Collects coins on contact and updates the coin bar.
+   */
   checkCoinCollection() {
     this.level.coins.forEach((coin, index) => {
       if (this.character.isColliding(coin)) {
@@ -234,7 +283,9 @@ class World {
     });
   }
 
-  /** Collects bottles and updates UI. */
+  /**
+   * Collects bottles on contact and updates the bottle bar.
+   */
   checkBottleCollection() {
     this.level.bottles.forEach((bottle, index) => {
       if (this.character.isColliding(bottle)) {
@@ -246,7 +297,9 @@ class World {
     });
   }
 
-  /** Handles throw input and spawns bottle. */
+  /**
+   * Spawns a throwable bottle when input is pressed and stock > 0.
+   */
   checkThrowObjects() {
     const kb = this.keyboard || window.keyboard || {};
     if (kb.D && this.canThrow && this.collectedBottles > 0) {
@@ -255,7 +308,9 @@ class World {
     }
   }
 
-  /** Spawns a new bottle and updates UI. */
+  /**
+   * Creates a new bottle instance and decreases the bottle count.
+   */
   throwBottle() {
     const c = this.character;
     const dir = c.otherDirection ? -1 : 1;
@@ -268,17 +323,21 @@ class World {
     this.bottleBar.setPercentage(pct);
   }
 
-  /** Render loop (requestAnimationFrame), respects pause. */
+  /**
+   * Draw loop using requestAnimationFrame; respects pause state.
+   */
   draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.translate(this.camera_x, 0);
     this.addObjectsInToWorld();
     this.ctx.translate(-this.camera_x, 0);
     if (this.paused) return;
-    this._raf = requestAnimationFrame(() => this.draw());
+    this.raf = requestAnimationFrame(() => this.draw());
   }
 
-  /** Draw order: bg, player, HUD, objects. */
+  /**
+   * Establishes drawing order: background, player, HUD, objects.
+   */
   addObjectsInToWorld() {
     this.addObjectToMap(this.level.backgroundObjects);
     this.addObjectToMap(this.level.clouds);
@@ -295,7 +354,9 @@ class World {
     this.addObjectToMap(this.throwableObjects);
   }
 
-  /** Draw boss + boss bar anchored to the boss. */
+  /**
+   * Draws the boss and anchors the boss health bar above it.
+   */
   addToBoss() {
     this.addToMap(this.endboss);
     this.bossBar.x = this.endboss.x + (this.endboss.width - this.bossBar.width) / 2;
@@ -303,13 +364,17 @@ class World {
     this.addToMap(this.bossBar);
   }
 
-  /** Draws an array of objects. */
+  /**
+   * Draws an array of drawables to the canvas.
+   */
   addObjectToMap(objects) {
     if (!objects || !objects.forEach) return;
     objects.forEach(o => this.addToMap(o));
   }
 
-  /** Draws a single object (handles flip). */
+  /**
+   * Draws a single object, handling left-right flipping.
+   */
   addToMap(mo) {
     if (!mo) return;
     if (mo.otherDirection) this.flipCharacter(mo);
@@ -318,7 +383,9 @@ class World {
     if (mo.otherDirection) this.flipCharacterBack(mo);
   }
 
-  /** Flips context horizontally for left-facing sprites. */
+  /**
+   * Flips the context horizontally to draw left-facing sprites.
+   */
   flipCharacter(mo) {
     this.ctx.save();
     this.ctx.translate(mo.width, 0);
@@ -326,11 +393,11 @@ class World {
     mo.x = mo.x * -1;
   }
 
-  /** Restores context after flip. */
+  /**
+   * Restores the context and local position after flipping.
+   */
   flipCharacterBack(mo) {
     mo.x = mo.x * -1;
     this.ctx.restore();
   }
 }
-
-

@@ -1,3 +1,8 @@
+/**
+ * Bottle bar for displaying the player's collected bottles.
+ * Updates its image based on the current percentage.
+ * @extends DrawableObject
+ */
 class BottleBar extends DrawableObject {
     percentage = 0;
 
@@ -9,7 +14,7 @@ class BottleBar extends DrawableObject {
         'img/7_statusbars/1_statusbar/3_statusbar_bottle/orange/80.png',
         'img/7_statusbars/1_statusbar/3_statusbar_bottle/orange/100.png'
     ];
-
+    
     constructor() {
         super();
         this.loadImages(this.IMAGES_BOTTLEBAR);
@@ -18,6 +23,9 @@ class BottleBar extends DrawableObject {
         this.setPercentage(0);
     }
 
+    /**
+     * Updates position, percentage and displayed image.
+     */
     setPercentage(percentage) {
         this.x = 40;
         this.y = 80;
@@ -26,6 +34,9 @@ class BottleBar extends DrawableObject {
         this.img = this.imageCache[path];
     }
 
+    /**
+     * Resolves which image to show based on percentage.
+     */
     resolveImageIndex() {
         if (this.percentage == 100) {
             return 5;

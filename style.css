@@ -1,38 +1,29 @@
+html,
 body {
-    height: 100%;
     margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
 }
 
-.impressum_background {    
+.impressum_background {
     font: 16px/1.5 system-ui, sans-serif;
     max-width: 800px;
     margin: 24px auto;
-    padding: 0 12px
+    padding: 0 12px;
 }
 
-html,
 body {
     width: 100%;
     height: 100%;
-}
-
-.game {
-    margin: 0 auto;
-}
-
-body {
     display: flex;
     flex-direction: column;
     align-items: center;
     overflow: hidden;
-    background: url('img/5_background/second_half_background.png') no-repeat center fixed;
+    background: url('img/5_background/road.jpg') no-repeat center fixed;
     background-size: cover;
     font-family: "Nunito", sans-serif;
     font-size: 20px;
-}
-
-canvas {
-    display: block;
 }
 
 .nunito-text {
@@ -42,10 +33,52 @@ canvas {
     font-style: normal;
 }
 
+.imp_title {
+    color: #2b6fff;
+}
+
+.impressum-mobile {
+    display: none;    
+    text-decoration: none;
+    font: 600 16px "Nunito", sans-serif;
+    color: cornflowerblue;
+    opacity: .9;
+}
+
+.impressum-mobile:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+.back_imp {
+    background: rgba(255, 255, 255, .9);
+    color: #111;
+    padding: 16px 20px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+    position: relative;   
+}
+
+.backgame {
+    color: cornflowerblue;
+    text-decoration: none;
+}
+
 .game {
     position: relative;
     display: inline-block;
 }
+
+canvas {
+    display: block;
+    margin: 0 auto;
+}
+
+.game canvas {
+    width: 100%;
+    height: 100%;
+}
+
 
 .game:fullscreen {
     width: 100vw;
@@ -56,6 +89,7 @@ canvas {
     width: 100%;
     height: 100%;
 }
+
 
 .game .fullscreen-icon {
     position: absolute;
@@ -105,6 +139,7 @@ canvas {
     filter: brightness(1.1);
 }
 
+
 .btn {
     padding: 10px 16px;
     border-radius: 10px;
@@ -134,6 +169,7 @@ canvas {
     border: 1px solid rgba(255, 255, 255, .25);
 }
 
+
 .game .start-screen {
     position: absolute;
     inset: 0;
@@ -150,14 +186,15 @@ canvas {
     gap: 12px;
 }
 
-/* HELP OVERLAY – responsive */
+
 .game .help {
     position: absolute;
     inset: 0;
     z-index: 120;
     display: grid;
     place-items: center;
-    padding: max(12px, env(safe-area-inset-top, 0)) max(12px, env(safe-area-inset-right, 0)) max(12px, env(safe-area-inset-bottom, 0)) max(12px, env(safe-area-inset-left, 0));
+    padding:
+        max(12px, env(safe-area-inset-top, 0)) max(12px, env(safe-area-inset-right, 0)) max(12px, env(safe-area-inset-bottom, 0)) max(12px, env(safe-area-inset-left, 0));
     background: rgba(0, 0, 0, .5);
 }
 
@@ -204,32 +241,6 @@ canvas {
     cursor: pointer;
 }
 
-/* MOBILE/TABLET */
-@media (pointer: coarse),
-(hover: none) {
-    .help-box {
-        width: min(640px, 94vw);
-        max-height: 86vh;
-        padding: clamp(14px, 2.8vh, 22px);
-    }
-
-    .help .start-ui {
-        flex-direction: column;
-    }
-
-    .help .btn {
-        width: 100%;
-        min-height: 48px;
-    }
-}
-
-/* sehr niedrige Viewports (Landscape-Handy) */
-@media (max-height: 480px) {
-    .help-box {
-        width: 94vw;
-        max-height: 90vh;
-    }
-}
 
 .overlay {
     position: absolute;
@@ -270,6 +281,7 @@ canvas {
     display: none;
 }
 
+
 .game .rotate-overlay {
     position: absolute;
     inset: 0;
@@ -290,6 +302,7 @@ canvas {
 .handy {
     width: 50px;
 }
+
 
 .mobile-ctrls {
     position: absolute;
@@ -326,6 +339,7 @@ canvas {
     background: rgba(0, 0, 0, .55);
 }
 
+
 .game.landscape {
     position: fixed;
     inset: 0;
@@ -333,19 +347,57 @@ canvas {
     height: 100vh;
 }
 
-@media (hover: none) and (pointer: coarse),
-(max-width: 900px) {
+
+.hide {
+    display: none !important;
+}
+
+
+@media (max-width: 900px),
+(hover: none) and (pointer: coarse) {
+    .start-ui {
+        flex-direction: column;
+        gap: 14px;
+        align-items: center;
+    }
+
+    .impressum-mobile {
+        display: block;
+        margin-top: 4px;
+    }
+
+    footer {
+        display: none;
+    }
+
     .game.landscape {
         height: calc(var(--vh, 1vh) * 100);
     }
 }
+
 
 @media (pointer: coarse),
 (hover: none) {
     .game .fullscreen-icon {
         display: none !important;
     }
+
+    .help-box {
+        width: min(640px, 94vw);
+        max-height: 86vh;
+        padding: clamp(14px, 2.8vh, 22px);
+    }
+
+    .help .start-ui {
+        flex-direction: column;
+    }
+
+    .help .btn {
+        width: 100%;
+        min-height: 48px;
+    }
 }
+
 
 @media only screen and (max-width: 720px) {
     .game canvas {
@@ -353,6 +405,7 @@ canvas {
         height: auto;
     }
 }
+
 
 @media only screen and (max-height: 480px) {
     h1 {
@@ -364,15 +417,13 @@ canvas {
     }
 }
 
-.hide {
-    display: none !important;
-}
 
 @media (pointer: fine) {
     .mobile-ctrls {
         display: none;
     }
 }
+
 
 @media (pointer: coarse) {
     .game .start-screen {

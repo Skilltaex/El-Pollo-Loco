@@ -17,9 +17,6 @@ class Chicken extends MovableObject {
     'img/3_enemies_chicken/chicken_normal/2_dead/dead.png'
   ];
 
-  /**
-   * Loads assets, sets random start position/speed and starts loops.
-   */
   constructor() {
     super().loadImage('img/3_enemies_chicken/chicken_normal/1_walk/1_w.png');
     this.loadImages(this.IMAGES_WALKING);
@@ -36,7 +33,6 @@ class Chicken extends MovableObject {
     this.walkInterval = setInterval(() => {
       if (!this.isDead()) this.moveLeft();
     }, 1000 / 60);
-
     this.animationInterval = setInterval(() => {
       if (this.isDead()) {
         this.img = this.imageCache[this.IMAGES_DEAD[0]];
